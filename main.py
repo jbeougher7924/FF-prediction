@@ -1,4 +1,4 @@
-from puller import pull
-from tests import tester
+from puller import pullQB
+import tests
 
-tester()
+print(pullQB())
