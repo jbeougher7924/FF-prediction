@@ -1,4 +1,10 @@
-from puller import pull
-from tests import tester
+from puller import pullQB
+import tests
+import Converter
+import pandas as pd
+from io import StringIO
 
-tester()
+x = pullQB()
+
+Converter.convert(x, write=True, file='Quarterbacks.txt')
+
