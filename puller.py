@@ -13,7 +13,7 @@ errorList = dict()
 
 
 # Problems
-
+#2016 Terrell Pryor
 
 def pullQB():
     """Gets stats for all qb's between year_start and year_end"""
@@ -39,7 +39,10 @@ def pullQB():
                 for table in playerTables:
                     table_name = re.findall('<caption>([0-9a-zA-Z &;]+)<', str(table))
                     if len(table_name) > 0 and wanted_tables.__contains__(table_name[0]):
-                        labels = re.findall('<th aria-label="([a-zA-Z0-9 %]+)"', str(table))
+                        #print('table',table)
+
+                        labels = re.findall('scope="col">([a-zA-Z0-9 /%\.\+]+)<', str(table))
+                        #print('labels',labels)
                         table_name = table_name[0]
 
                         print(table_name, '...')
@@ -75,7 +78,7 @@ def getQuarterbackList(year):
             addr = re.findall('href="/players(/[A-Z]/[a-zA-Z0-9]+)', line)
             gs = re.findall('gs">([0-9]+)<', line)
             ##CHANGE IN FINAL TO <
-            if int(gs[0]) != min_starts:
+            if int(gs[0]) < min_starts:
                 continue
             cmp = int(re.findall('"pass_cmp">([0-9]+)<', line)[0])  # controls for punters/wr/etc
             if cmp < min_completions:
@@ -152,6 +155,9 @@ def processPassingTable(table):
         elif team[0] == '2TM' or team[0] == '3TM':
             continue
         currentStats.append(str(re.findall('/teams/([a-z0-9]+)/', crow)[0]))
+        pos = re.findall('"pos">([a-zA-Z]+)<', crow)
+        if len(pos) < 1 or str(pos[0]).lower() != 'qb':
+            continue
         currentStats.append('qb')
         number = re.findall('"uniform_number">([0-9]+)<', crow)
         if len(number) == 0:
@@ -232,6 +238,9 @@ def processesAdjustedPassingTable(table):
         elif team[0] == '2TM' or team[0] == '3TM':
             continue
         currentStats.append(str(re.findall('/teams/([a-z0-9]+)/', crow)[0]))
+        pos = re.findall('"pos">([a-zA-Z]+)<', crow)
+        if len(pos) < 1 or str(pos[0]).lower() != 'qb':
+            continue
         currentStats.append('qb')
         number = re.findall('"uniform_number">([0-9]+)<', crow)
         if len(number) == 0:
