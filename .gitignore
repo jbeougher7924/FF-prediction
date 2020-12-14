@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/data.txt
+/fantasy2013.csv
+/fantasy2013-Ver1.csv
+/fantasy2014.csv
