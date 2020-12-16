@@ -6,7 +6,8 @@ import pandas as pd
 # quick link website
 # https://www.pro-football-reference.com/years/2012/fantasy.htm
 
-class get_player_data():
+
+class GetPlayerData:
     def __init__(self, url='https://www.pro-football-reference.com', year=2013, maxPlayers=10):
         self.url = url
         self.year = year
@@ -35,10 +36,13 @@ class get_player_data():
     def load_test_data(self):
         return self.load_from_file("data.html")
 
+    def get_data_frame(self):
+        return self.df
+
     def get_data(self):
         # uncomment and comment if you want to use new data or test data
-        # soup = self.load_new_data()
-        soup = self.load_test_data()
+        soup = self.load_new_data()
+        # soup = self.load_test_data()
 
         print("Parsing table of data")
         parsed_table = soup.find_all('table')[0]
