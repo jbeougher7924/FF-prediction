@@ -39,10 +39,12 @@ class GetPlayerData:
     def get_data_frame(self):
         return self.df
 
-    def get_data(self):
+    def get_data(self, run_test=True):
         # uncomment and comment if you want to use new data or test data
-        soup = self.load_new_data()
-        # soup = self.load_test_data()
+        if run_test:
+            soup = self.load_test_data()
+        else:
+            soup = self.load_new_data()
 
         print("Parsing table of data")
         parsed_table = soup.find_all('table')[0]

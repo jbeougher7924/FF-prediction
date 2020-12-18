@@ -2,11 +2,13 @@ beautifulsoup4==4.9.3
 bs4==0.0.1
 certifi==2020.12.5
 chardet==3.0.4
+console-menu==0.6.0
 idna==2.10
 lxml==4.6.2
 numpy==1.19.4
 panda==0.3.1
 pandas==1.1.5
+python-console-menu==1.1.0
 python-dateutil==2.8.1
 pytz==2020.4
 requests==2.25.0
