@@ -1,4 +1,5 @@
-# from puller import pull
+import puller
+import pandas as pd
 # from tests import tester
 from menu_manager import init_Menu
 

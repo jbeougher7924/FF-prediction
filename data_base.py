@@ -2,10 +2,10 @@ import sqlite3
 from pandas import DataFrame
 
 class DataBaseManager:
-    def __init__(self, df=None):
+    def __init__(self, df=None, dn='PlayerData.db'):
         self.df = df
         # connect to the PlayerData.db database
-        self.conn = sqlite3.connect('PlayerData.db')
+        self.conn = sqlite3.connect(dn)
 
     def create_player_database(self):
         # init an empty string to hold the column names to be used in the sql statement
@@ -28,6 +28,7 @@ class DataBaseManager:
         self.conn.commit()
         # transfer the dataframe data to a sql database
         self.df.to_sql('PLAYERS', self.conn, if_exists='replace')
+
 
 
 
