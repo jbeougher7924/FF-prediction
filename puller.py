@@ -3,47 +3,63 @@ from bs4 import BeautifulSoup as bs
 import re
 import pandas as pd
 
-
 # Problems
 # The hash function is random, so every time you run this script you get new table id's..
 
 
-
-#Important constants
+# Important constants
 min_starts = 4
 min_completions = 13
 year_start = 2010
 year_end = 2020
 
-#tables to collect
-wanted_tables = ['Name', 'Passing Table', 'Adjusted Passing Table', 'Rushing &amp; Receiving Table', 'Fantasy Table', 'Combine Measurements Table']
+# tables to collect
+wanted_tables = ['Name', 'Passing Table', 'Adjusted Passing Table', 'Rushing &amp; Receiving Table', 'Fantasy Table',
+                 'Combine Measurements Table']
 
-#table
-Quarterbacks = [['Quarterback Table'], ['qbid', 'Name', 'Year Drafted', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone', 'Vertical']]
-Passing_table = [['Passing Table'], ['ptid', 'qbid',  'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk', 'Yds', 'NY/A', 'ANY/A', 'Sk%', '4QC', 'GWD', 'AV']]
-Adj_Passing_table = [['Adjusted Passing Table'],['aptid', 'qbid', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Att', 'Y/A+', 'NY/A+', 'AY/A+', 'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
-Rush_Rec_table = [['Rush and Receiving Table'], ['arrtid', 'qbid', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Rush', 'Yds', 'TD', '1D', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds', 'Y/R', 'TD', '1D', 'Lng', 'R/G', 'Y/G', 'Ctch%', 'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb']]
-Fantasy_Table = [['Fantasy Table'], ['ftid', 'qbid', 'Name', 'Year', 'Age', 'G', 'FantPos', 'FantPt', 'VBD', 'PosRank', 'OvRank']]
+# table
+Quarterbacks = [['Quarterback Table'],
+                ['qbid', 'Name', 'Year Drafted', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone',
+                 'Vertical']]
+Passing_table = [['Passing Table'],
+                 ['ptid', 'qbid', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%',
+                  'Yds', 'TD', 'TD%', 'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk',
+                  'Yds', 'NY/A', 'ANY/A', 'Sk%', '4QC', 'GWD', 'AV']]
+Adj_Passing_table = [['Adjusted Passing Table'],
+                     ['aptid', 'qbid', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Att', 'Y/A+',
+                      'NY/A+', 'AY/A+', 'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
+Rush_Rec_table = [['Rush and Receiving Table'],
+                  ['arrtid', 'qbid', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Rush', 'Yds', 'TD', '1D',
+                   'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds', 'Y/R', 'TD', '1D', 'Lng', 'R/G', 'Y/G', 'Ctch%',
+                   'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb']]
+Fantasy_Table = [['Fantasy Table'],
+                 ['ftid', 'qbid', 'Name', 'Year', 'Age', 'G', 'FantPos', 'FantPt', 'VBD', 'PosRank', 'OvRank']]
 Statistics_Table = [['Statistics Table'], ['qbid', 'year', 'ptid', 'aptid', 'arrtid', 'ftid']]
 
-#caught errors
+# caught errors
 errorList = []
 
-#This value keeps track of years with the minimum completions and starts
-#only fantasy pts from these years will be collected
+# This value keeps track of years with the minimum completions and starts
+# only fantasy pts from these years will be collected
 current_years = []
 
 Pname = ""
 qbid = 0
 
+
 class Puller:
 
     def __init__(self, minStarts=5, minComps=13, yStart=2010, yEnd=2011):
+        """
+        min_starts - minimum number of starts a player can have in a given season to be added to the DB
+        min_completions - seperates skill positions that may throw a few passes from QBs
+        year_start - first year of data to be pulled
+        year_end - last year (not included) of data to be pulled
+        """
         self.min_starts = minStarts
         self.min_completions = minComps
         self.year_start = yStart
         self.year_end = yEnd
-
 
     def pullQB(self):
         """Gets stats for all qb's between year_start and year_end"""
@@ -68,9 +84,8 @@ class Puller:
                     for table in playerTables:
                         table_name = re.findall('<caption>([0-9a-zA-Z &;]+)<', str(table))
                         if len(table_name) > 0 and wanted_tables.__contains__(table_name[0]):
-
                             labels = re.findall('scope="col">([a-zA-Z0-9 /%\.\+]+)<', str(table))
-                            #print('labels',labels)
+                            # print('labels',labels)
                             table_name = table_name[0]
 
                             print(table_name, '...')
@@ -78,11 +93,8 @@ class Puller:
                             pulled[Pname][table_name].append(labels)
                             pulled[Pname][table_name].append(self.processTable(table, table_name, Pname))
 
-
         print('ERRORS', errorList)
         return [Passing_table, Adj_Passing_table, Rush_Rec_table, Fantasy_Table, Quarterbacks]
-        #return pulled
-
 
     def getQuarterbackList(self, year):
         """takes a year as input, returns a list of QBS that
@@ -92,11 +104,9 @@ class Puller:
         r = requests.get('https://pro-football-reference.com/years/' + str(year) + '/passing.htm')
         soup = bs(r.content, 'html.parser')
 
-
         yearsTable = soup.find_all('table')
         if len(yearsTable) > 1:
-           yearsTable = yearsTable[1]
-
+            yearsTable = yearsTable[1]
 
         a = re.findall('<tr>(.*)</tr>', str(yearsTable))
         qbs = []
@@ -124,7 +134,6 @@ class Puller:
 
         return qbs
 
-
     def getPlayerStatTables(self, address):
         """Takes the address for the player page
         returns all the stat tables listed on that page"""
@@ -136,7 +145,6 @@ class Puller:
         tables = soup.find_all('table')
 
         return tables
-
 
     def processTable(self, table, Tname, Pname):
         """takes a table as input, returns a list of all data
@@ -153,8 +161,6 @@ class Puller:
         elif Tname == 'Combine Measurements Table':
             return self.processCombine(table, Pname)
 
-
-
     def processPassingTable(self, table, Pname):
         total_stats = []
         bod = bs(str(table), 'html.parser')
@@ -164,7 +170,7 @@ class Puller:
             try:
                 currentStats = []
                 crow = str(crow)
-                #print(crow)
+                # print(crow)
 
                 # Verify year is within limits
                 currentYear = re.findall('years/[0-9]+/">([0-9]+)<', crow)
@@ -173,7 +179,7 @@ class Puller:
                 currentYear = int(currentYear[0])
                 if currentYear < 2010 or currentYear > 2019:
                     continue
-                #print(currentYear)
+                # print(currentYear)
                 currentStats.append(hash(self.processPname(Pname) + str(currentYear)))
                 currentStats.append(self.qbid)
                 currentStats.append(Pname)
@@ -241,12 +247,11 @@ class Puller:
 
                 total_stats.append(currentStats)
                 Passing_table.append(currentStats)
-                current_years.append(currentYear)
+                self.current_years.append(currentYear)
 
             except:
                 errorList.append([Pname, currentYear, "Passing"])
         return total_stats
-
 
     def processesAdjustedPassingTable(self, table, Pname):
         total_stats = []
@@ -266,7 +271,7 @@ class Puller:
                 currentYear = int(currentYear[0])
                 if currentYear < 2010 or currentYear > 2019:
                     continue
-                #print(currentYear)
+                # print(currentYear)
                 currentStats.append(hash(self.processPname(Pname) + str(currentYear)))
                 currentStats.append(self.qbid)
                 currentStats.append(Pname)
@@ -317,10 +322,6 @@ class Puller:
                 errorList.append([Pname, currentYear, "Adjusted Passing"])
         return total_stats
 
-
-
-
-
     def processRandR(self, table, Pname):
         total_stats = []
         bod = bs(str(table), 'html.parser')
@@ -330,7 +331,7 @@ class Puller:
             try:
                 currentStats = []
                 crow = str(crow)
-                #print(crow)
+                # print(crow)
 
                 # Verify year is within limits
                 currentYear = re.findall('years/[0-9]+/">([0-9]+)<', crow)
@@ -339,7 +340,7 @@ class Puller:
                 currentYear = int(currentYear[0])
                 if currentYear < 2010 or currentYear > 2019:
                     continue
-                #print(currentYear)
+                # print(currentYear)
                 currentStats.append(hash(self.processPname(Pname) + str(currentYear)))
                 currentStats.append(self.qbid)
                 currentStats.append(Pname)
@@ -398,7 +399,7 @@ class Puller:
                 total_stats.append(currentStats)
                 Rush_Rec_table.append(currentStats)
             except:
-                errorList.append([Pname, currentYear, "Rushing and Receiving" ])
+                errorList.append([Pname, currentYear, "Rushing and Receiving"])
 
         return total_stats
 
@@ -413,16 +414,16 @@ class Puller:
 
                 currentStats = []
                 crow = str(row)
-                #print(crow)
+                # print(crow)
 
                 # Verify year is within limits
                 currentYear = re.findall('"/years/[0-9]+/fantasy.htm">([0-9]+)<', crow)
                 if len(currentYear) == 0:
                     continue
                 currentYear = int(currentYear[0])
-                if currentYear < 2010 or currentYear > 2019 or currentYear not in current_years:
+                if currentYear < 2010 or currentYear > 2019 or currentYear not in self.current_years:
                     continue
-                #print(currentYear)
+                # print(currentYear)
                 currentStats.append(hash(self.processPname(Pname) + str(currentYear)))
                 currentStats.append(self.qbid)
                 currentStats.append(Pname)
@@ -446,7 +447,7 @@ class Puller:
             except:
                 errorList.append([Pname, currentYear, "Fantasy Pts"])
 
-        current_years.clear()
+        self.current_years.clear()
         return total_stats
 
     def processCombine(self, table, Pname):
@@ -505,5 +506,3 @@ class Puller:
             tableName = table[0][0]
             tableData = pd.DataFrame(table[2:], columns=table[1])
             tableData.to_csv("QB {}".format(tableName))
-
-
