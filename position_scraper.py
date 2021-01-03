@@ -10,6 +10,7 @@ import numpy as np
 # prints entire pandas table
 pd.set_option('display.max_columns', None)
 
+
 class Scraper:
 
     year_start = 0
@@ -40,7 +41,7 @@ class Scraper:
     current_adj_pass = []
     current_combined = []
 
-    def __init__(self, ystart=2010, yend=2011):
+    def __init__(self, ystart=2010, yend=2019):
 
         self.year_start = ystart
         self.year_end = yend
@@ -51,7 +52,7 @@ class Scraper:
             print('             ', year, '\n')
             player_list = self.getPosPlayer(year)
 
-            shortList = player_list[10:20]
+            shortList = player_list[:]
             for player in shortList:
                 name = player[0]
                 if name not in self.parsed_players:
@@ -63,10 +64,7 @@ class Scraper:
                     except:
                         self.errors.append([name, 'ALL'])
 
-        vals = pd.DataFrame(self.adj_passing[2:], columns=self.adj_passing[1])
-        print(vals)
         print('errors', self.errors)
-        print(pd.DataFrame(self.combined[2:], columns=self.combined[1]))
 
     def getPosPlayer(self, year):
         index = 0
@@ -226,7 +224,7 @@ class Scraper:
 
 
     def scrapeTeams(self):
-        teams_to_scrape = list(self.teams.keys())[:]
+        teams_to_scrape = list(self.teams.keys())[:33]
         for j, team in enumerate(teams_to_scrape):
             print(j + 1, team)
             for year in range(self.year_start, self.year_end):
@@ -260,7 +258,6 @@ class Scraper:
         team_pd = pd.DataFrame(self.team_stats[2:], columns=self.team_stats[1])
         print(team_pd)
 
-
     def fix_rec(self, input_receiving_table):
         corrected = (input_receiving_table[:8] + input_receiving_table[19:27] + input_receiving_table[8:19] + input_receiving_table[27:])
         return corrected
@@ -280,8 +277,6 @@ class Scraper:
                 if val[1] == year:
                     record[3] = val[0]
                     break
-
-
 
     def printRecords(self):
         if len(self.fantasy) > 0:
