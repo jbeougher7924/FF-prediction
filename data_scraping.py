@@ -98,7 +98,7 @@ class GetPlayerData:
                 tdf['Position'] = pos
                 tdf['Season'] = self.year
 
-                # Print the TDF to the console for debuging
+                # Print the TDF to the console for debugging
                 # print("TDF")
                 # print(tdf)
                 # *******************************************
