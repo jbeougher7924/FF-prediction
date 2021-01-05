@@ -3,9 +3,7 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 import numpy as np
 
-# prevented rb/wr/te from having a passing table
 # NaN is set for any value not in the table
-
 
 # prints entire pandas table
 pd.set_option('display.max_columns', None)
