@@ -1,21 +1,49 @@
 from python_console_menu import AbstractMenu, MenuItem
 from data_scraping import GetPlayerData as gpd
 from data_base import DataBaseManager as dbm
+from position_scraper import Scraper as scp
 
 
 class PlayerDataSubMenu(AbstractMenu):
     def __init__(self):
         super().__init__("Player Data Menu.")
-        self.year = 0
+        self.start_year = 0
+        self.end_year = 0
         self.num_players = 0
         self.savedata = False
         self.players = None
+        self.team_data = scp()
 
     def initialise(self):
-        self.add_menu_item(MenuItem(0, "Exit current menu").set_as_exit_option())
-        self.add_menu_item(MenuItem(1, "Load Test Data", lambda: self.load_test_data()))
-        self.add_menu_item(MenuItem(2, "Load New Data", lambda: self.load_new_data()))
-        self.add_menu_item(MenuItem(3, "Save to  Database", lambda: self.save_to_database()))
+        i = 0
+        self.add_menu_item(MenuItem(i, "Exit current menu").set_as_exit_option())
+        i += 1
+        self.add_menu_item(MenuItem(i, "Load Test Data", lambda: self.load_test_data()))
+        i += 1
+        self.add_menu_item(MenuItem(i, "Load New Data", lambda: self.load_new_data()))
+        i += 1
+        self.add_menu_item(MenuItem(i, "Pull Team Data", lambda: self.pull_team_data()))
+        i += 1
+        self.add_menu_item(MenuItem(i, "Save to  Database", lambda: self.save_to_database()))
+
+    # function to check that the start and end year are entered into the menu correctly, this prevents a start > end
+    # TODO: Single Year entry
+    # to get current year need to enter 2018 to 2019 for only the year 2018
+    def input_years(self):
+        self.start_year = int(input("Enter Start Year: "))
+        self.end_year = int(input("Enter End Year: "))
+        while self.start_year > self.end_year:
+            print("Start year greater then End Year")
+            self.start_year = int(input("Enter Start Year: "))
+            self.end_year = int(input("Enter End Year: "))
+
+    # pulls the team data using the position_scraper.py file and class
+    def pull_team_data(self):
+        self.input_years()
+        self.team_data = scp(year_start=self.start_year, year_end=self.end_year)
+        self.team_data.scrapeTeams()
+        print("Pull team data complete")
+
 
     def load_test_data(self):
         self.players = gpd(maxPlayers=1)
@@ -23,7 +51,7 @@ class PlayerDataSubMenu(AbstractMenu):
         self.savedata = True
 
     def load_new_data(self):
-        self.year = int(input("Enter Year: "))
+        self.input_years()
         self.num_players = int(input("Enter number of Players to retrieve: "))
         try:
             self.players = gpd(year=self.year, maxPlayers=self.num_players)
@@ -32,6 +60,7 @@ class PlayerDataSubMenu(AbstractMenu):
         except Exception as e:
             print("Error {}".format(e))
         self.display()
+
     def save_to_database(self):
         if not self.savedata:
             print("Error no data to save. Program needs to load data before saving.")

@@ -32,6 +32,7 @@ class Scraper:
     parsed_players = []
     # any errors will be recorded as [player, table] or ALL if rejected
     errors = []
+    min_games = 4
 
     ################## Data ##################
     team_stats = []
@@ -50,10 +51,12 @@ class Scraper:
     current_adj_pass = []
     current_combined = []
 
-    def __init__(self, ystart=2010, yend=2019): # Change years to scrape here for testing
+    # Change years to scrape here for testing
+    def __init__(self, year_start=2010, year_end=2019, max_players=200):
 
-        self.year_start = ystart
-        self.year_end = yend
+        self.year_start = year_start    # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
+        self.year_end = year_end        # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
+        self. max_players = max_players # tag the variable is local to the function
         self.clearTables()
 
     def pullPosPlayer(self):
@@ -241,6 +244,11 @@ class Scraper:
                 c = r.content
                 soup = bs(c, 'html.parser')
                 tables = soup.find_all('table', id='team_stats')[0]
+                try:  # try statement to catch an error if the index is out of range for this call to this line of code
+                    tables = soup.find_all('table', id='team_stats')[0]
+                except Exception as e:
+                    print("Error {}".format(e))
+                # print(tables)
                 rows = tables.find_all('tbody')
                 for i, row in enumerate(rows[0].children):
                     if i % 2 != 0:
