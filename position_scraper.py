@@ -13,10 +13,6 @@ pd.set_option('display.max_columns', None)
 
 class Scraper:
 
-    year_start = 0
-    year_end = 0
-    max_players = 200   # change this to 200
-
     parsed_players = []
     teams = {'buf': 1, 'mia': 2, 'nwe': 3, 'nyj': 4, 'htx': 5, 'clt': 6, 'jax': 7, 'oti': 8, 'cle': 9, 'pit': 10, 'cin': 11, 'rav': 12, 'kan': 13, 'sdg': 14, 'rai': 15, 'den': 16, 'nyg': 17, 'dal': 18, 'was': 19, 'phi': 20, 'car': 21, 'nor': 22, 'tam': 23, 'atl': 24, 'gnb': 25, 'min': 26, 'chi': 27, 'det': 28, 'sea': 29, 'crd':30, 'ram':31, 'sfo':32, '2tm': -1, '3tm': -1}
 
@@ -24,7 +20,6 @@ class Scraper:
                         "passing_advanced"]
 
     errors = []
-    min_games = 4
 
     team_stats = []
     fantasy = []
@@ -41,10 +36,12 @@ class Scraper:
     current_adj_pass = []
     current_combined = []
 
-    def __init__(self, ystart=2010, yend=2019):
+    def __init__(self, year_start=2010, year_end=2019, max_players=200, min_games=4):
 
-        self.year_start = ystart
-        self.year_end = yend
+        self.year_start = year_start    # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
+        self.year_end = year_end        # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
+        self. max_players = max_players # tag the variable is local to the function
+        self.min_games = min_games
         self.clearTables()
 
     def pullPosPlayer(self):
@@ -234,7 +231,10 @@ class Scraper:
                 # Create soup from content of request
                 c = r.content
                 soup = bs(c, 'html.parser')
-                tables = soup.find_all('table', id='team_stats')[0]
+                try:  # try statement to catch an error if the index is out of range for this call to this line of code
+                    tables = soup.find_all('table', id='team_stats')[0]
+                except Exception as e:
+                    print("Error {}".format(e))
                 # print(tables)
                 rows = tables.find_all('tbody')
                 for i, row in enumerate(rows[0].children):
