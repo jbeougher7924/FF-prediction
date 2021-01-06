@@ -233,6 +233,7 @@ class Scraper:
 
     def scrapeTeams(self):
         """ scrapes data about yearly team performance"""
+        tablekey = 1
         teams_to_scrape = list(self.team_stubs.keys())[:32]
         for j, team in enumerate(teams_to_scrape):
             print(j + 1, team)
@@ -263,6 +264,8 @@ class Scraper:
                             if len(val) == 0:
                                 val = np.nan
                             current.append(val)
+                        current.insert(0, tablekey)
+                        tablekey += 1
                         self.team_stats.append(current)
 
         team_pd = pd.DataFrame(self.team_stats[2:], columns=self.team_stats[1])
@@ -369,6 +372,6 @@ class Scraper:
                         'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
         self.combined = [['Combined'], ['pid', 'year', 'ptid', 'aptid', 'ruretid', 'ftid']]
         self.team_stats = [['Team Stats'],
-                      ['tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp', 'Att', 'Yds',
+                      ['ttid', 'tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp', 'Att', 'Yds',
                        'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A', '1stD', 'Pen', 'Yds', '1stPy', '#Dr',
                        'Sc%', 'TO%', 'Start', 'Time', 'Plays', 'Yds', 'Pts']]
