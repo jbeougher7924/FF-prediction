@@ -127,13 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/data.txt
-/fantasy2013.csv
-/fantasy2013-Ver1.csv
-/fantasy2014.csv
-/fantasy2015.csv
-/fantasy2016.csv
-/PlayerData.db
+/data/data.txt
+/data/fantasy2013.csv
+/data/fantasy2013-Ver1.csv
+/data/fantasy2014.csv
+/data/fantasy2015.csv
+/data/fantasy2016.csv
+/data/PlayerData.db
 /.idea/.gitignore
 /.idea/deployment.xml
 /.idea/FF-prediction.iml
@@ -142,8 +142,8 @@ dmypy.json
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
 .idea
-/fantasy2013.csv
-/fantasy2013-Ver1.csv
-/fantasy2014.csv
-/fantasy2015.csv
-/fantasy2016.csv
+/data/fantasy2013.csv
+/data/fantasy2013-Ver1.csv
+/data/fantasy2014.csv
+/data/fantasy2015.csv
+/data/fantasy2016.csv

@@ -16,7 +16,7 @@ class GetPlayerData:
 
     # save data passed to it into the file data.html
     def save_to_html(self, data):
-        f = open("data.html", "w", encoding='utf-8')
+        f = open("data/data.html", "w", encoding='utf-8')
         f.write(str(data))
         f.close()
 
@@ -34,7 +34,7 @@ class GetPlayerData:
         return soup
 
     def load_test_data(self):
-        return self.load_from_file("data.html")
+        return self.load_from_file("data/data.html")
 
     def get_data_frame(self):
         return self.df

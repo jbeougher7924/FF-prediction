@@ -41,7 +41,13 @@ class PlayerDataSubMenu(AbstractMenu):
     def pull_team_data(self):
         self.input_years()
         self.team_data = scp(year_start=self.start_year, year_end=self.end_year)
-        self.team_data.scrapeTeams()
+        self.team_data.pullPosPlayer()
+        print(self.team_data.getFantasyDataFrame())
+        print(self.team_data.getTeamStatsDataFrame())
+        print(self.team_data.getPassingDataFrame())
+        print(self.team_data.getAdjPassingDataFrame())
+        print(self.team_data.getRushRecDataFrame())
+        print(self.team_data.getcombineDataFrame())
         print("Pull team data complete")
 
 

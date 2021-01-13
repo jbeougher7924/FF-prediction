@@ -11,11 +11,6 @@ pd.set_option('display.max_columns', None)
 
 class Scraper:
 
-    ################## Hyper Parameters - Parameters set for testing ##################
-    year_start = 0
-    year_end = 0
-    max_players = 200   # DEFAULT - 200. Players within the top X spots get scraped
-
     ################## Parameters for scraping team data ##################
     # first 32 represent team stubs. the rest are team ID's (tmID) for teams who changed their names
     team_stubs = {'buf': 1, 'mia': 2, 'nwe': 3, 'nyj': 4, 'htx': 5, 'clt': 6, 'jax': 7, 'oti': 8, 'cle': 9, 'pit': 10,
@@ -32,7 +27,7 @@ class Scraper:
     parsed_players = []
     # any errors will be recorded as [player, table] or ALL if rejected
     errors = []
-    min_games = 4
+
 
     ################## Data ##################
     team_stats = []
@@ -43,7 +38,7 @@ class Scraper:
     adj_passing = []
     combined = []
 
-    # iteration data. If a player has an error while scrapin they will not be added
+    # iteration data. If a player has an error while scraping they will not be added
     current_fantasy = []
     current_rush_receive = []
     current_combine = []
@@ -53,10 +48,13 @@ class Scraper:
 
     # Change years to scrape here for testing
     def __init__(self, year_start=2010, year_end=2019, max_players=200):
+        # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
+        # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
+        # tag the variable is local to the function
 
-        self.year_start = year_start    # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
-        self.year_end = year_end        # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
-        self. max_players = max_players # tag the variable is local to the function
+        self.year_start = year_start
+        self.year_end = year_end
+        self.max_players = max_players
         self.clearTables()
 
     def pullPosPlayer(self):
