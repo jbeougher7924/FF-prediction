@@ -10,15 +10,13 @@ pd.set_option('display.max_columns', None)
 
 
 class Scraper:
-
     ################## Parameters for scraping team data ##################
     # first 32 represent team stubs. the rest are team ID's (tmID) for teams who changed their names
     team_stubs = {'buf': 1, 'mia': 2, 'nwe': 3, 'nyj': 4, 'htx': 5, 'clt': 6, 'jax': 7, 'oti': 8, 'cle': 9, 'pit': 10,
                   'cin': 11, 'rav': 12, 'kan': 13, 'sdg': 14, 'rai': 15, 'den': 16, 'nyg': 17, 'dal': 18, 'was': 19,
                   'phi': 20, 'car': 21, 'nor': 22, 'tam': 23, 'atl': 24, 'gnb': 25, 'min': 26, 'chi': 27, 'det': 28,
-                  'sea': 29, 'crd': 30, 'ram': 31, 'sfo': 32, '2tm': -1, '3tm': -1, 'hou': 5, 'ind': 6, 'ten':8,
+                  'sea': 29, 'crd': 30, 'ram': 31, 'sfo': 32, '2tm': -1, '3tm': -1, 'hou': 5, 'ind': 6, 'ten': 8,
                   'oak': 15, 'ari': 30, 'stl': 31, 'bal': 12}
-
 
     # Names of the tables with values to be scraped
     tables_to_scrape = ["fantasy", "rushing_and_receiving", "receiving_and_rushing", "combine", "passing",
@@ -27,7 +25,6 @@ class Scraper:
     parsed_players = []
     # any errors will be recorded as [player, table] or ALL if rejected
     errors = []
-
 
     ################## Data ##################
     team_stats = []
@@ -47,7 +44,7 @@ class Scraper:
     current_combined = []
 
     # Change years to scrape here for testing
-    def __init__(self, year_start=2010, year_end=2019, max_players=200):
+    def __init__(self, year_start=2010, year_end=2011, max_players=20):
         # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
         # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
         # tag the variable is local to the function
@@ -112,6 +109,7 @@ class Scraper:
     def scrapePlayerStatTables(self, player):
         """For each player in the player table, this subroutine will look for each table in the tables_to_scrape.
         If data exists, the data will be scraped into the appropriate data table"""
+
         name = player[0]
         pos = player[1].lower()
         stub = player[2]
@@ -152,82 +150,81 @@ class Scraper:
                 if j % 2 != 0:
                     current_table = []
 
-                    if len(row) < 5:  # controls for years missed
-                        continue
-                    year = row.find_all('a')[0].get_text()
-                    try:
-                        year = int(year)
-                    except:
-                        continue
-                    if (year < self.year_start or year > self.year_end) and i != 3:
-                        continue
-                    current_table.append(year)
-                    for item in row.find_all('td'):
-                        val = str(item.get_text()).replace('%', '')
-                        if len(val) == 0:
-                            val = np.nan
-                        current_table.append(val)
+                if len(row) < 5:  # controls for years missed
+                    continue
+                year = row.find_all('a')[0].get_text()
 
-                    x = len(current_table)
+                try:
+                    year = int(year)
+                except:
+                    continue
+                if (year < self.year_start or year > self.year_end) and i != 3:
+                    continue
+                current_table.append(year)
+                for item in row.find_all('td'):
+                    val = str(item.get_text()).replace('%', '')
+                    if len(val) == 0:
+                        val = np.nan
+                    current_table.append(val)
 
-                    # Fantasy
-                    if i == 0:
+                x = len(current_table)
 
-                        ftid = len(self.fantasy) - 1 + len(self.current_fantasy)
-                        current_table.insert(0, ftid)
-                        self.current_fantasy.append(current_table)
-                        years_to_scrape.append(year)
-                        self.current_combined.append([pid, current_table[1], '',  '', '', current_table[0]])
+                # Fantasy
+                if i == 0:
+
+                    ftid = len(self.fantasy) - 1 + len(self.current_fantasy)
+                    current_table.insert(0, ftid)
+                    self.current_fantasy.append(current_table)
+                    years_to_scrape.append(year)
+                    self.current_combined.append([pid, current_table[1], '', '', '', current_table[0]])
 
                     #  rushing and receiving
-                    elif i == 1:
-                        if x < 32:
-                            current_table.append(0)
-                        ruretid = len(self.rushing_and_receiving) - 1 + (len(self.current_rush_receive))
-                        if year in years_to_scrape:
-                            current_table.insert(0, ruretid)
-                            current_table[4] = pos
-                            current_table[3] = self.team_stubs[current_table[3].lower()]
-                            self.current_rush_receive.append(current_table)
+                elif i == 1:
+                    if x < 32:
+                        current_table.append(0)
+                    ruretid = len(self.rushing_and_receiving) - 1 + (len(self.current_rush_receive))
+                    if year in years_to_scrape:
+                        current_table.insert(0, ruretid)
+                    current_table[4] = pos
+                    current_table[3] = self.team_stubs[current_table[3].lower()]
+                    self.current_rush_receive.append(current_table)
 
                     # receiving and rushing
-                    elif i == 2:
-                        if year in years_to_scrape:
-                            rerutid = len(self.rushing_and_receiving) - 1 + (len(self.current_rush_receive))
-                            current_table.insert(0, rerutid)
-                            current_table[4] = pos
-                            current_table[3] = self.team_stubs[current_table[3].lower()]
-                            self.current_rush_receive.append(self.fix_rec(current_table))
+                elif i == 2:
+                    if year in years_to_scrape:
+                        rerutid = len(self.rushing_and_receiving) - 1 + (len(self.current_rush_receive))
+                        current_table.insert(0, rerutid)
+                        current_table[4] = pos
+                        current_table[3] = self.team_stubs[current_table[3].lower()]
+                        self.current_rush_receive.append(self.fix_rec(current_table))
 
-
-                    # combine
-                    elif i == 3:
-                        current_table.insert(0, pid)  # pid based on parsed players
-                        self.current_combine.append(current_table)
+                        # combine
+                elif i == 3:
+                    current_table.insert(0, pid)  # pid based on parsed players
+                    self.current_combine.append(current_table)
 
                     # passing
-                    elif i == 4:
-                        if year in years_to_scrape and pos == 'qb':
+                elif i == 4:
+                    if year in years_to_scrape and pos == 'qb':
 
-                            ptid = len(self.passing) - 1 + len(self.current_passing)
-                            current_table.insert(0, ptid)
-                            if current_table[30] is np.nan:
-                                current_table[30] = 0
-                            if current_table[31] is np.nan:
-                                current_table[31] = 0
-                            current_table[3] = self.team_stubs[current_table[3].lower()]
-                            self.current_passing.append(current_table)
+                        ptid = len(self.passing) - 1 + len(self.current_passing)
+                        current_table.insert(0, ptid)
+                        if current_table[30] is np.nan:
+                            current_table[30] = 0
+                        if current_table[31] is np.nan:
+                            current_table[31] = 0
+                        current_table[3] = self.team_stubs[current_table[3].lower()]
+                        self.current_passing.append(current_table)
 
-                    # adjusted passing
-                    elif i == 5:
-                        if year in years_to_scrape:
-                            aptid = len(self.adj_passing) - 1 + len(self.current_adj_pass)
-                            current_table.insert(0, aptid)
-                            current_table[3] = self.team_stubs[current_table[3].lower()]
-                            self.current_adj_pass.append(current_table)
+                        # adjusted passing
+                elif i == 5:
+                    if year in years_to_scrape:
+                        aptid = len(self.adj_passing) - 1 + len(self.current_adj_pass)
+                        current_table.insert(0, aptid)
+                        current_table[3] = self.team_stubs[current_table[3].lower()]
+                        self.current_adj_pass.append(current_table)
 
         self.createCombined()
-
 
     def scrapeTeams(self):
         """ scrapes data about yearly team performance"""
@@ -250,7 +247,7 @@ class Scraper:
                 # print(tables)
                 rows = tables.find_all('tbody')
                 for i, row in enumerate(rows[0].children):
-                    if i % 2 != 0:
+                    if i % 2 == 0:
                         current = []
                         current.append(j + 1)  # team id
                         current.append(year)
@@ -271,11 +268,13 @@ class Scraper:
 
     def fix_rec(self, input_receiving_table):
         """turns the receiving rushing table into the rushing receiving table"""
-        corrected = (input_receiving_table[:8] + input_receiving_table[19:27] + input_receiving_table[8:19] + input_receiving_table[27:])
+        corrected = (input_receiving_table[:8] + input_receiving_table[19:27] + input_receiving_table[
+                                                                                8:19] + input_receiving_table[27:])
         return corrected
 
     def createCombined(self):
         """creates the combined table for linking data for players together"""
+
         for record in self.current_combined:
             year = record[1]
             for val in self.current_rush_receive:
@@ -324,7 +323,6 @@ class Scraper:
             self.combine.append(val)
         for val in self.current_combined:
             self.combined.append(val)
-        self.combine.append(self.current_combine)
 
     # Getters - returns data frames of data section lists
     def getFantasyDataFrame(self):
@@ -352,24 +350,30 @@ class Scraper:
         """Resets data to baseline"""
         self.fantasy = [['Fantasy'], ['ftid', 'Year', 'Age', 'G', 'FantPos', 'FantPt', 'VBD', 'PosRank', 'OvRank']]
         self.rushing_and_receiving = [['Rushing and Receiving'],
-                                 ['ruretid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'Rush', 'Yds', 'TD', '1D',
-                                  'Lng',
-                                  'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds', 'Y/R', 'TD', '1D', 'Lng', 'R/G', 'Y/G',
-                                  'Ctch%',
-                                  'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV']]
-        self.combine = [['Combine'],
-                   ['pid', 'Year', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone', 'Vertical']]
+                                      ['ruretid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'Rush', 'Yds', 'TD',
+                                       '1D',
+                                       'Lng',
+                                       'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds', 'Y/R', 'TD', '1D', 'Lng', 'R/G', 'Y/G',
+                                       'Ctch%',
+                                       'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV']]
+        self.combine = [['Player'],
+                        ['pid', 'Year', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone',
+                         'Vertical']]
         self.passing = [['Passing'],
-                   ['ptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds', 'TD',
-                    'TD%',
-                    'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk', 'Yds', 'NY/A',
-                    'ANY/A',
-                    'Sk%', '4QC', 'GWD', 'AV']]
+                        ['ptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds',
+                         'TD',
+                         'TD%',
+                         'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk', 'Yds', 'NY/A',
+                         'ANY/A',
+                         'Sk%', '4QC', 'GWD', 'AV']]
         self.adj_passing = [['Adjusted Passing'],
-                       ['aptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Att', 'Y/A+', 'NY/A+', 'AY/A+',
-                        'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
+                            ['aptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Att', 'Y/A+', 'NY/A+',
+                             'AY/A+',
+                             'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
         self.combined = [['Combined'], ['pid', 'year', 'ptid', 'aptid', 'ruretid', 'ftid']]
         self.team_stats = [['Team Stats'],
-                      ['ttid', 'tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp', 'Att', 'Yds',
-                       'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A', '1stD', 'Pen', 'Yds', '1stPy', '#Dr',
-                       'Sc%', 'TO%', 'Start', 'Time', 'Plays', 'Yds', 'Pts']]
+                           ['ttid', 'tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp',
+                            'Att', 'Yds',
+                            'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A', '1stD', 'Pen', 'Yds', '1stPy',
+                            '#Dr',
+                            'Sc%', 'TO%', 'Start', 'Time', 'Plays', 'Yds', 'Pts']]
