@@ -44,7 +44,7 @@ class Scraper:
     current_combined = []
 
     # Change years to scrape here for testing
-    def __init__(self, year_start=2010, year_end=2011, max_players=20):
+    def __init__(self, year_start=2010, year_end=2020, max_players=200):
         # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
         # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
         # tag the variable is local to the function
@@ -74,7 +74,7 @@ class Scraper:
                     except:
                         self.errors.append([name, 'ALL'])
 
-        print('errors', self.errors)
+        print('errors', len(self.errors), self.errors)
 
     def scrapePositionPlayer(self, year):
         """Will get the first max_players from any given fantasy year. Players that have already been scraped
@@ -176,7 +176,7 @@ class Scraper:
                     current_table.insert(0, ftid)
                     self.current_fantasy.append(current_table)
                     years_to_scrape.append(year)
-                    self.current_combined.append([pid, current_table[1], '', '', '', current_table[0]])
+                    self.current_combined.append([pid, '', current_table[1], '', '', '', current_table[0]])
 
                     #  rushing and receiving
                 elif i == 1:
@@ -264,7 +264,6 @@ class Scraper:
                         self.team_stats.append(current)
 
         team_pd = pd.DataFrame(self.team_stats[2:], columns=self.team_stats[1])
-        print(team_pd)
 
     def fix_rec(self, input_receiving_table):
         """turns the receiving rushing table into the rushing receiving table"""
@@ -276,18 +275,22 @@ class Scraper:
         """creates the combined table for linking data for players together"""
 
         for record in self.current_combined:
-            year = record[1]
+            year = record[2]
             for val in self.current_rush_receive:
                 if val[1] == year:
-                    record[4] = val[0]
+                    record[5] = val[0]
+                    break
+            for val in self.current_rush_receive:
+                if val[1] == year:
+                    record[1] = val[3]
                     break
             for val in self.current_passing:
                 if val[1] == year:
-                    record[2] = val[0]
+                    record[3] = val[0]
                     break
             for val in self.current_adj_pass:
                 if val[1] == year:
-                    record[3] = val[0]
+                    record[4] = val[0]
                     break
 
     def printRecords(self):
@@ -350,30 +353,25 @@ class Scraper:
         """Resets data to baseline"""
         self.fantasy = [['Fantasy'], ['ftid', 'Year', 'Age', 'G', 'FantPos', 'FantPt', 'VBD', 'PosRank', 'OvRank']]
         self.rushing_and_receiving = [['Rushing and Receiving'],
-                                      ['ruretid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'Rush', 'Yds', 'TD',
-                                       '1D',
-                                       'Lng',
-                                       'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds', 'Y/R', 'TD', '1D', 'Lng', 'R/G', 'Y/G',
-                                       'Ctch%',
+                                      ['ruretid', 'year', 'age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'Rush', 'RUSHYds', 'RUSHTD',
+                                       'RUSH1D','RUSHLng','RushY/A', 'RUSHY/G', 'RUSHA/G', 'TGT', 'Rec', 'RECYds', 'Y/Rec',
+                                       'RECTD', 'REC1D', 'RECLng', 'Rec/G', 'RECY/G', 'CtchPct',
                                        'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV']]
         self.combine = [['Player'],
                         ['pid', 'Year', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone',
                          'Vertical']]
         self.passing = [['Passing'],
                         ['ptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds',
-                         'TD',
-                         'TD%',
-                         'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk', 'Yds', 'NY/A',
-                         'ANY/A',
-                         'Sk%', '4QC', 'GWD', 'AV']]
+                         'TD', 'TD%','Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'QBR', 'Sk', 'SkYdsLost',
+                         'NY/A',  'ANY/A', 'Sk%', '4QC', 'GWD', 'AV']]
         self.adj_passing = [['Adjusted Passing'],
                             ['aptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Att', 'Y/A+', 'NY/A+',
                              'AY/A+',
                              'ANY/A+', 'Cmp%+', 'TD%+', 'Int%+', 'Sack%+', 'Rate+']]
-        self.combined = [['Combined'], ['pid', 'year', 'ptid', 'aptid', 'ruretid', 'ftid']]
+        self.combined = [['Combined'], ['pid', 'ttid', 'year', 'ptid', 'aptid', 'ruretid', 'ftid']]
         self.team_stats = [['Team Stats'],
-                           ['ttid', 'tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp',
-                            'Att', 'Yds',
-                            'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A', '1stD', 'Pen', 'Yds', '1stPy',
+                           ['ttid', 'tid', 'year', 'Player', 'PF', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', 'Tot1stD', 'Cmp',
+                            'PASSAtt', 'PASSYds',
+                            'PASSTD', 'Int', 'NY/A', 'Pass1stD', 'RUSHAtt', 'RUSHYds', 'RUSHTD', 'RUSHY/A', 'RUSH1stD', 'Pen', 'PENYds', '1stPy',
                             '#Dr',
-                            'Sc%', 'TO%', 'Start', 'Time', 'Plays', 'Yds', 'Pts']]
+                            'Sc%', 'TO%', 'Start', 'Time', 'Plays', 'AVGYds', 'AVGPts']]
