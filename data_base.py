@@ -64,6 +64,7 @@ class DataBaseManager:
 
     c.execute('''CREATE TABLE "Player" (
             "pid"        INTEGER,
+            "name"       VARCHAR(20), 
             "Year"       INTEGER,
             "Pos"        VARCHAR(2),
             "Ht"         INTEGER,

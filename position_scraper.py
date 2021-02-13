@@ -16,7 +16,7 @@ class Scraper:
                   'cin': 11, 'rav': 12, 'kan': 13, 'sdg': 14, 'rai': 15, 'den': 16, 'nyg': 17, 'dal': 18, 'was': 19,
                   'phi': 20, 'car': 21, 'nor': 22, 'tam': 23, 'atl': 24, 'gnb': 25, 'min': 26, 'chi': 27, 'det': 28,
                   'sea': 29, 'crd': 30, 'ram': 31, 'sfo': 32, '2tm': -1, '3tm': -1, 'hou': 5, 'ind': 6, 'ten': 8,
-                  'oak': 15, 'ari': 30, 'stl': 31, 'bal': 12}
+                  'oak': 15, 'ari': 30, 'stl': 31, 'bal': 12, 'lac': 14, 'lvr': 15, 'lar':31}
 
     # Names of the tables with values to be scraped
     tables_to_scrape = ["fantasy", "rushing_and_receiving", "receiving_and_rushing", "combine", "passing",
@@ -44,7 +44,7 @@ class Scraper:
     current_combined = []
 
     # Change years to scrape here for testing
-    def __init__(self, year_start=2010, year_end=2020, max_players=200):
+    def __init__(self, year_start=2010, year_end=2021, max_players=200):
         # self.year_start and year_start are not the same.  Best when to init a self value to use the same name for both
         # this makes it easier to identify and read code. Self is for that instance of the object. With out the self.
         # tag the variable is local to the function
@@ -71,8 +71,8 @@ class Scraper:
                     try:
                         self.scrapePlayerStatTables(player)
                         self.addTables()
-                    except:
-                        self.errors.append([name, 'ALL'])
+                    except Exception as e:
+                        self.errors.append([name, "Error {}".format(e)])
 
         print('errors', len(self.errors), self.errors)
 
@@ -93,8 +93,8 @@ class Scraper:
         players = soup.find_all('tr', class_='')[1:]
 
         player_list = []
-
-        for i, player in enumerate(players):
+        subset = players[:]
+        for i, player in enumerate(subset):
             dat = player.find('td', attrs={'data-stat': 'player'})
             name = dat.a.get_text()
             stub = dat.a.get('href')
@@ -115,6 +115,8 @@ class Scraper:
         stub = player[2]
         pid = len(self.parsed_players)
         years_to_scrape = []
+        current_table = []
+
         self.current_fantasy = []
         self.current_rush_receive = []
         self.current_combine = []
@@ -144,6 +146,9 @@ class Scraper:
                 elif i == 4 or i == 5 and pos != 'qb':
                     continue
                 else:
+                    if i == 3:
+                        self.current_combine = [[pid, name, 0, pos, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+                                                 np.nan, np.nan]]
                     self.errors.append([name, table])
                 continue
             for j, row in enumerate(tables[0].children):
@@ -201,6 +206,7 @@ class Scraper:
                         # combine
                 elif i == 3:
                     current_table.insert(0, pid)  # pid based on parsed players
+                    current_table.insert(1, name) #check
                     self.current_combine.append(current_table)
 
                     # passing
@@ -214,6 +220,7 @@ class Scraper:
                         if current_table[31] is np.nan:
                             current_table[31] = 0
                         current_table[3] = self.team_stubs[current_table[3].lower()]
+                        current_table[4] = pos
                         self.current_passing.append(current_table)
 
                         # adjusted passing
@@ -222,6 +229,7 @@ class Scraper:
                         aptid = len(self.adj_passing) - 1 + len(self.current_adj_pass)
                         current_table.insert(0, aptid)
                         current_table[3] = self.team_stubs[current_table[3].lower()]
+                        current_table[4] = pos
                         self.current_adj_pass.append(current_table)
 
         self.createCombined()
@@ -358,7 +366,7 @@ class Scraper:
                                        'RECTD', 'REC1D', 'RECLng', 'Rec/G', 'RECY/G', 'CtchPct',
                                        'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV']]
         self.combine = [['Player'],
-                        ['pid', 'Year', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone',
+                        ['pid', 'name', 'Year', 'Pos', 'Ht', 'Wt', '40yd', 'Bench', 'Broad Jump', 'Shuttle', '3Cone',
                          'Vertical']]
         self.passing = [['Passing'],
                         ['ptid', 'Year', 'Age', 'TmID', 'Pos', 'No.', 'G', 'GS', 'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds',
