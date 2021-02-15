@@ -2,6 +2,7 @@ from python_console_menu import AbstractMenu, MenuItem
 from data_scraping import GetPlayerData as gpd
 from data_base import DataBaseManager as dbm
 from position_scraper import Scraper as scp
+from MachLearn import MachineLearningClass as MLC
 
 
 class PlayerDataSubMenu(AbstractMenu):
@@ -75,6 +76,18 @@ class PlayerDataSubMenu(AbstractMenu):
             DB = dbm(df=self.players.get_data_frame())
             DB.create_player_database()
 
+class MachineLearingSubMenu(AbstractMenu):
+
+    def __init__(self):
+        super().__init__("Machine Learning Menu.")
+        self.MLC = MLC()
+    def initialise(self):
+        i = 0
+        self.add_menu_item(MenuItem(i, "Exit current menu").set_as_exit_option())
+        i += 1
+        self.add_menu_item(MenuItem(i, "Process Learning Data", lambda: self.process_learning_data()))
+    def process_learning_data(self):
+        self.MLC.StartML()
 
 class FFPMenu(AbstractMenu):
     show_hidden_menu = False
@@ -85,6 +98,7 @@ class FFPMenu(AbstractMenu):
     def initialise(self):
         self.add_menu_item(MenuItem(0, "Exit menu").set_as_exit_option())
         self.add_menu_item(MenuItem(1, "Get Player Data ", menu=PlayerDataSubMenu()))
+        self.add_menu_item(MenuItem(2, "Machine Learning", menu=MachineLearingSubMenu()))
         # self.add_menu_item(MenuItem(2, "Show hidden menu item", lambda: self.__should_show_hidden_menu__()))
         # self.add_hidden_menu_item(MenuItem(3, "Hidden menu item", lambda: print("I was a hidden menu item")))
 
