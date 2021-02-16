@@ -1,18 +1,19 @@
 import sqlite3
 from pandas import DataFrame
 
+
 class DataBaseManager:
 
-  def __init__(self, df=None, dn='PlayerData.db'):
-    self.df = df
-    self.dn = dn
-    # connect to the PlayerData.db database
-    self.conn = sqlite3.connect(dn)
+    def __init__(self, df=None, dn='data/PlayerData.db'):
+        self.df = df
+        self.dn = dn
+        # connect to the PlayerData.db database
+        self.conn = sqlite3.connect(dn)
 
-  def createDB(self):
-    c = self.conn.cursor()
+    def createDB(self):
+        c = self.conn.cursor()
 
-    c.execute('''CREATE TABLE "Fantasy" (
+        c.execute('''CREATE TABLE "Fantasy" (
       "ftid"	INTEGER,
       "year"	INTEGER,
       "age"	INTEGER,
@@ -25,7 +26,7 @@ class DataBaseManager:
       PRIMARY KEY("ftid")
       );''')
 
-    c.execute('''CREATE TABLE "Rushing and Receiving" (
+        c.execute('''CREATE TABLE "Rushing_Receiving" (
         "ruretid"	INTEGER,
         "year"		INTEGER,
         "age"		INTEGER,
@@ -62,7 +63,7 @@ class DataBaseManager:
         PRIMARY KEY("ruretid")
         );''')
 
-    c.execute('''CREATE TABLE "Player" (
+        c.execute('''CREATE TABLE "Player" (
             "pid"        INTEGER,
             "name"       VARCHAR(20), 
             "Year"       INTEGER,
@@ -77,7 +78,7 @@ class DataBaseManager:
             "Vertical"   REAL,
             PRIMARY KEY("pid")
             );''')
-    c.execute('''CREATE TABLE "Passing" (
+        c.execute('''CREATE TABLE "Passing" (
             "ptid"       INTEGER,
             "Year"       INTEGER,
             "Age"        INTEGER,
@@ -113,7 +114,7 @@ class DataBaseManager:
             "AV"         INTEGER,
             PRIMARY KEY("ptid")
           );''')
-    c.execute('''CREATE TABLE "Adjusted Passing" (
+        c.execute('''CREATE TABLE "Adjusted Passing" (
           "aptid"      INTEGER,
           "Year"       INTEGER,
           "Age"        INTEGER,
@@ -136,7 +137,7 @@ class DataBaseManager:
           PRIMARY KEY("aptid")
           );''')
 
-    c.execute('''CREATE TABLE "Combined" (
+        c.execute('''CREATE TABLE "Combined" (
           "pid"        INTEGER,
           "ttid"        INTEGER,  
           "year"       INTEGER,
@@ -152,7 +153,7 @@ class DataBaseManager:
           FOREIGN KEY("ftid") REFERENCES FANTASY("FTID")
         );''')
 
-    c.execute('''CREATE TABLE "Team Stats" (
+        c.execute('''CREATE TABLE "Team Stats" (
           "ttid"        INTEGER,
           "TmID"         INTEGER,
           "year"        INTEGER,
@@ -189,19 +190,33 @@ class DataBaseManager:
           "AVGPts"      REAL,
           PRIMARY KEY("ttid")
           );''')
-    # Save (commit) the changes
-    self.conn.commit()
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    self.conn.close()
+        # Save (commit) the changes
+        self.conn.commit()
+        # We can also close the connection if we are done with it.
+        # Just be sure any changes have been committed or they will be lost.
+        self.conn.close()
 
-  def addtable(self, tabletoinsert, name):
-    self.conn = sqlite3.connect(self.dn)
-    c = self.conn.cursor()
-    df = tabletoinsert
-    df.to_sql(name, self.conn, if_exists='replace', index=False)
-    # Save (commit) the changes
-    self.conn.commit()
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    self.conn.close()
+    def addtable(self, tabletoinsert, name):
+        self.conn = sqlite3.connect(self.dn)
+        c = self.conn.cursor()
+        df = tabletoinsert
+        df.to_sql(name, self.conn, if_exists='replace', index=False)
+        # Save (commit) the changes
+        self.conn.commit()
+        # We can also close the connection if we are done with it.
+        # Just be sure any changes have been committed or they will be lost.
+        self.conn.close()
+
+    def select_all_task(self, table_name, column_name='*'):
+        cur = self.conn.cursor()
+
+        command = "SELECT " + column_name + " FROM " + table_name
+        cur.execute(command)
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            print(row)
+
+        self.conn.close()
+
