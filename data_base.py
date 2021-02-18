@@ -1,6 +1,8 @@
 import sqlite3
 from pandas import DataFrame
-
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 class DataBaseManager:
 
@@ -219,4 +221,58 @@ class DataBaseManager:
             print(row)
 
         self.conn.close()
+    # convert the df frame to a usable state and change nulls to a number
+    def convertTables(self):
+        # Fills all Null values as 0
+        self.df = self.df.fillna(0)
 
+        # Converts Column data type from 'object' to intended type
+        self.df['FantPt'] = self.df['FantPt'].astype(str).astype(int)
+        self.df['age'] = self.df['age'].astype(str).astype(int)
+        self.df['G'] = self.df['G'].astype(str).astype(int)
+        self.df['GS'] = self.df['GS'].astype(str).astype(int)
+        self.df['TGT'] = self.df['TGT'].astype(str).astype(int)
+        self.df["Y/Rec"] = self.df["Y/Rec"].astype(str).astype(float)
+        self.df['REC1D'] = self.df['REC1D'].astype(str).astype(int)
+        self.df['RECLng'] = self.df['RECLng'].astype(str).astype(int)
+        self.df['CtchPct'] = self.df['CtchPct'].astype(str).astype(float)
+        self.df["Y/Tch"] = self.df["Y/Tch"].astype(str).astype(float)
+        self.df['Fmb'] = self.df['Fmb'].astype(str).astype(int)
+
+    def keras_data(self):
+        rushing_and_receiving = ['FantPt', 'age', 'G', 'GS', 'TGT', "Y/Rec", 'REC1D', 'RECLng', 'CtchPct', "Y/Tch",
+                                 'Fmb']
+
+        SQL_Query = pd.read_sql_query(
+            '''Select FantPt, age, G, GS, TGT, "Y/Rec", REC1D, RECLng, CtchPct, "Y/Tch", Fmb
+            From (Select Ft.FantPt, FT.ftid
+                From Fantasy Ft
+                WHERE Ft.ftid IN (SELECT DISTINCT Cmb.ftid
+                                    FROM Fantasy F, 'Rushing_Receiving' RR, Combined Cmb
+                                    WHERE RR.ruretid == Cmb.ruretid and RR.Pos == 'te')) FF 
+            Join (Select *
+                From Combined Cmb JOIN 'Rushing_Receiving' RR
+                ON Cmb.ruretid == RR.ruretid
+                Where RR.Pos == 'te') RE  
+            ON (RE.ftid + 1) == FF.ftid
+            ''', self.conn)
+
+        self.df = pd.DataFrame(SQL_Query, columns=rushing_and_receiving)
+        self.convertTables()
+        self.df.to_csv('data/r_r.csv')
+
+
+
+        # for value in rush_receive_list:
+        #     print(value)
+
+        #
+        # # meta data
+        # self.df.info()
+        # self.df.describe()
+        #
+        # # prints the histogram
+        # self.df.hist(bins=50, figsize=(20, 15))
+        # plt.show()
+
+        self.conn.close()
