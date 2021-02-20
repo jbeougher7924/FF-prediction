@@ -1,18 +1,21 @@
 import sqlite3
 from pandas import DataFrame
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 class DataBaseManager:
 
-  def __init__(self, df=None, dn='PlayerData.db'):
-    self.df = df
-    self.dn = dn
-    # connect to the PlayerData.db database
-    self.conn = sqlite3.connect(dn)
+    def __init__(self, df=None, dn='data/PlayerData.db'):
+        self.df = df
+        self.dn = dn
+        # connect to the PlayerData.db database
+        self.conn = sqlite3.connect(dn)
 
-  def createDB(self):
-    c = self.conn.cursor()
+    def createDB(self):
+        c = self.conn.cursor()
 
-    c.execute('''CREATE TABLE "Fantasy" (
+        c.execute('''CREATE TABLE "Fantasy" (
       "ftid"	INTEGER,
       "year"	INTEGER,
       "age"	INTEGER,
@@ -25,7 +28,7 @@ class DataBaseManager:
       PRIMARY KEY("ftid")
       );''')
 
-    c.execute('''CREATE TABLE "Rushing and Receiving" (
+        c.execute('''CREATE TABLE "Rushing_Receiving" (
         "ruretid"	INTEGER,
         "year"		INTEGER,
         "age"		INTEGER,
@@ -62,7 +65,7 @@ class DataBaseManager:
         PRIMARY KEY("ruretid")
         );''')
 
-    c.execute('''CREATE TABLE "Player" (
+        c.execute('''CREATE TABLE "Player" (
             "pid"        INTEGER,
             "name"       VARCHAR(20), 
             "Year"       INTEGER,
@@ -77,7 +80,7 @@ class DataBaseManager:
             "Vertical"   REAL,
             PRIMARY KEY("pid")
             );''')
-    c.execute('''CREATE TABLE "Passing" (
+        c.execute('''CREATE TABLE "Passing" (
             "ptid"       INTEGER,
             "Year"       INTEGER,
             "Age"        INTEGER,
@@ -113,7 +116,7 @@ class DataBaseManager:
             "AV"         INTEGER,
             PRIMARY KEY("ptid")
           );''')
-    c.execute('''CREATE TABLE "Adjusted Passing" (
+        c.execute('''CREATE TABLE "Adjusted Passing" (
           "aptid"      INTEGER,
           "Year"       INTEGER,
           "Age"        INTEGER,
@@ -136,7 +139,7 @@ class DataBaseManager:
           PRIMARY KEY("aptid")
           );''')
 
-    c.execute('''CREATE TABLE "Combined" (
+        c.execute('''CREATE TABLE "Combined" (
           "pid"        INTEGER,
           "ttid"        INTEGER,  
           "year"       INTEGER,
@@ -152,7 +155,7 @@ class DataBaseManager:
           FOREIGN KEY("ftid") REFERENCES FANTASY("FTID")
         );''')
 
-    c.execute('''CREATE TABLE "Team Stats" (
+        c.execute('''CREATE TABLE "Team Stats" (
           "ttid"        INTEGER,
           "TmID"         INTEGER,
           "year"        INTEGER,
@@ -189,19 +192,87 @@ class DataBaseManager:
           "AVGPts"      REAL,
           PRIMARY KEY("ttid")
           );''')
-    # Save (commit) the changes
-    self.conn.commit()
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    self.conn.close()
+        # Save (commit) the changes
+        self.conn.commit()
+        # We can also close the connection if we are done with it.
+        # Just be sure any changes have been committed or they will be lost.
+        self.conn.close()
 
-  def addtable(self, tabletoinsert, name):
-    self.conn = sqlite3.connect(self.dn)
-    c = self.conn.cursor()
-    df = tabletoinsert
-    df.to_sql(name, self.conn, if_exists='replace', index=False)
-    # Save (commit) the changes
-    self.conn.commit()
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    self.conn.close()
+    def addtable(self, tabletoinsert, name):
+        self.conn = sqlite3.connect(self.dn)
+        c = self.conn.cursor()
+        df = tabletoinsert
+        df.to_sql(name, self.conn, if_exists='replace', index=False)
+        # Save (commit) the changes
+        self.conn.commit()
+        # We can also close the connection if we are done with it.
+        # Just be sure any changes have been committed or they will be lost.
+        self.conn.close()
+
+    def select_all_task(self, table_name, column_name='*'):
+        cur = self.conn.cursor()
+
+        command = "SELECT " + column_name + " FROM " + table_name
+        cur.execute(command)
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            print(row)
+
+        self.conn.close()
+    # convert the df frame to a usable state and change nulls to a number
+    def convertTables(self):
+        # Fills all Null values as 0
+        self.df = self.df.fillna(0)
+
+        # Converts Column data type from 'object' to intended type
+        self.df['FantPt'] = self.df['FantPt'].astype(str).astype(int)
+        self.df['age'] = self.df['age'].astype(str).astype(int)
+        self.df['G'] = self.df['G'].astype(str).astype(int)
+        self.df['GS'] = self.df['GS'].astype(str).astype(int)
+        self.df['TGT'] = self.df['TGT'].astype(str).astype(int)
+        self.df["Y/Rec"] = self.df["Y/Rec"].astype(str).astype(float)
+        self.df['REC1D'] = self.df['REC1D'].astype(str).astype(int)
+        self.df['RECLng'] = self.df['RECLng'].astype(str).astype(int)
+        self.df['CtchPct'] = self.df['CtchPct'].astype(str).astype(float)
+        self.df["Y/Tch"] = self.df["Y/Tch"].astype(str).astype(float)
+        self.df['Fmb'] = self.df['Fmb'].astype(str).astype(int)
+
+    def keras_data(self):
+        rushing_and_receiving = ['FantPt', 'age', 'G', 'GS', 'TGT', "Y/Rec", 'REC1D', 'RECLng', 'CtchPct', "Y/Tch",
+                                 'Fmb']
+
+        SQL_Query = pd.read_sql_query(
+            '''Select FantPt, age, G, GS, TGT, "Y/Rec", REC1D, RECLng, CtchPct, "Y/Tch", Fmb
+            From (Select Ft.FantPt, FT.ftid
+                From Fantasy Ft
+                WHERE Ft.ftid IN (SELECT DISTINCT Cmb.ftid
+                                    FROM Fantasy F, 'Rushing_Receiving' RR, Combined Cmb
+                                    WHERE RR.ruretid == Cmb.ruretid and RR.Pos == 'te')) FF 
+            Join (Select *
+                From Combined Cmb JOIN 'Rushing_Receiving' RR
+                ON Cmb.ruretid == RR.ruretid
+                Where RR.Pos == 'te') RE  
+            ON (RE.ftid + 1) == FF.ftid
+            ''', self.conn)
+
+        self.df = pd.DataFrame(SQL_Query, columns=rushing_and_receiving)
+        self.convertTables()
+        self.df.to_csv('data/r_r.csv')
+
+
+
+        # for value in rush_receive_list:
+        #     print(value)
+
+        #
+        # # meta data
+        # self.df.info()
+        # self.df.describe()
+        #
+        # # prints the histogram
+        # self.df.hist(bins=50, figsize=(20, 15))
+        # plt.show()
+
+        self.conn.close()
