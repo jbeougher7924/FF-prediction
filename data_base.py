@@ -1,12 +1,10 @@
 import sqlite3
 from pandas import DataFrame
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 class DataBaseManager:
 
-    def __init__(self, df=None, dn='data/PlayerData.db'):
+    def __init__(self, df=None, dn='PlayerData.db'):
         self.df = df
         self.dn = dn
         # connect to the PlayerData.db database
@@ -42,9 +40,9 @@ class DataBaseManager:
         "RUSHTD"	INTEGER,
         "RUSH1D"	INTEGER,
         "RUSHLng"	INTEGER,
-        "RushY/A"	Real,
-        "RUSHY/G"	Real,
-        "RUSHA/G"	Real,
+        "RushYA"	Real,
+        "RUSHYG"	Real,
+        "RUSHAG"	Real,
         "TGT"		INTEGER,
         "Rec"		INTEGER,
         "RECYds"	INTEGER,
@@ -52,12 +50,12 @@ class DataBaseManager:
         "RECTD"		INTEGER,
         "REC1D"		INTEGER,
         "RECLng"	INTEGER,
-        "Rec/G"		REAL,
-        "RECY/G"	REAL,
-        "CtchPct"		REAL,        
-        "Y/Tgt"		REAL,
+        "RecG"		REAL,
+        "RECYG"	    REAL,
+        "CtchPct"	REAL,        
+        "YTgt"		REAL,
         "Touch"         INTEGER,
-        "Y/Tch"         REAL,
+        "YTch"         REAL,
         "YScm"          INTEGER,
         "RRTD"          INTEGER,
         "FMB"           INTEGER,
@@ -74,7 +72,7 @@ class DataBaseManager:
             "Wt"         INTEGER,
             "40yd"       REAL,
             "Bench"      INTEGER,
-            "Broad Jump" REAL,
+            "Broad_Jump" REAL,
             "Shuttle"    REAL,
             "3Cone"      REAL,
             "Vertical"   REAL,
@@ -100,23 +98,23 @@ class DataBaseManager:
             "Int%"       REAL,
             "1D"         INTEGER,
             "Lng"        INTEGER,
-            "Y/A"        REAL,
-            "AY/A"       REAL,
-            "Y/C"        REAL,
-            "Y/G"        REAL,
+            "YA"        REAL,
+            "AYA"       REAL,
+            "YC"        REAL,
+            "YG"        REAL,
             "Rate"       REAL,
             "QBR"        REAL,
             "Sk"         INTEGER,
             "SkYdsLost"  INTEGER,
-            "NY/A"       REAL,
-            "ANY/A"      REAL,
+            "NYA"       REAL,
+            "ANYA"      REAL,
             "Sk%"        REAL,
             "4QC"        INTEGER,
             "GWD"        INTEGER,
             "AV"         INTEGER,
             PRIMARY KEY("ptid")
           );''')
-        c.execute('''CREATE TABLE "Adjusted Passing" (
+        c.execute('''CREATE TABLE "Adjusted_Passing" (
           "aptid"      INTEGER,
           "Year"       INTEGER,
           "Age"        INTEGER,
@@ -127,10 +125,10 @@ class DataBaseManager:
           "GS"         INTEGER,
           "QBrec"      VARCHAR(20),	
           "Att"        INTEGER,
-          "Y/A+"       REAL,
-          "NY/A+"      REAL,
-          "AY/A+"      REAL,
-          "ANY/A+"     REAL,
+          "YA+"       REAL,
+          "NYA+"      REAL,
+          "AYA+"      REAL,
+          "ANYA+"     REAL,
           "Cmp%+"      REAL,
           "TD%+"       REAL,
           "Int%+"      REAL,
@@ -155,7 +153,7 @@ class DataBaseManager:
           FOREIGN KEY("ftid") REFERENCES FANTASY("FTID")
         );''')
 
-        c.execute('''CREATE TABLE "Team Stats" (
+        c.execute('''CREATE TABLE "Team_Stats" (
           "ttid"        INTEGER,
           "TmID"         INTEGER,
           "year"        INTEGER,
@@ -163,7 +161,7 @@ class DataBaseManager:
           "PF"          INTEGER,
           "Yds"         INTEGER,
           "Ply"         INTEGER,
-          "Y/P"         REAL,
+          "YP"         REAL,
           "TO"          INTEGER,
           "FL"          INTEGER,
           "Tot1stD"    INTEGER,
@@ -172,12 +170,12 @@ class DataBaseManager:
           "PASSYds"     INTEGER,
           "PASSTD"      INTEGER,
           "Int"         INTEGER,
-          "NY/A"        REAL,
+          "NYA"        REAL,
           "Pass1stD"    INTEGER,
           "RUSHAtt"     INTEGER,
           "RUSHYds"     INTEGER,
           "RUSHTD"      INTEGER,   
-          "RUSHY/A"     REAL,
+          "RUSHYA"     REAL,
           "RUSH1stD"    INTEGER,
           "Pen"         INTEGER,
           "PENYds"      INTEGER,
@@ -192,6 +190,45 @@ class DataBaseManager:
           "AVGPts"      REAL,
           PRIMARY KEY("ttid")
           );''')
+
+        c.execute('''CREATE TABLE "Yearly_Stats" (
+          "ytid"          INTEGER,
+          "pid"           INTEGER,
+          "Year"          INTEGER,
+          "G#"            INTEGER,
+          "Week"          INTEGER,
+          "Age"           REAL,
+          "TmID"          INTEGER,
+          "away"          INTEGER,
+          "Opp_TmID"      INTEGER,	
+          "Result"        VARCHAR(20),
+          "GS"            INTEGER,
+          "Rush_Att"      INTEGER,
+          "Rush_Yds"      INTEGER,
+          "Rush_YA"       REAL,
+          "Rush_TD"       INTEGER,
+          "Tgt"           INTEGER,
+          "Rec"           INTEGER,
+          "Rec_Yds"       INTEGER,
+          "RecYR"         REAL,
+          "Rec_TD"        INTEGER,
+          "Ctch%"         REAL,
+          "YTgt"          REAL,
+          "cmp"           INTEGER,
+          "pass_Att"      INTEGER,
+          "Cmp%"          REAL,
+          "pass_Yds"      INTEGER,
+          "pass_TD"       INTEGER,
+          "Int"           INTEGER,
+          "pass_Rate"     REAL,
+          "Sack"          INTEGER,
+          "Sack_yds"      INTEGER,
+          "Pass_YA"       REAL,
+          "PASS_AYA"      REAL,
+          PRIMARY KEY("ytid"),
+          FOREIGN KEY("pid") REFERENCES COMBINE("PID")
+          );''')
+
         # Save (commit) the changes
         self.conn.commit()
         # We can also close the connection if we are done with it.
@@ -207,72 +244,4 @@ class DataBaseManager:
         self.conn.commit()
         # We can also close the connection if we are done with it.
         # Just be sure any changes have been committed or they will be lost.
-        self.conn.close()
-
-    def select_all_task(self, table_name, column_name='*'):
-        cur = self.conn.cursor()
-
-        command = "SELECT " + column_name + " FROM " + table_name
-        cur.execute(command)
-
-        rows = cur.fetchall()
-
-        for row in rows:
-            print(row)
-
-        self.conn.close()
-    # convert the df frame to a usable state and change nulls to a number
-    def convertTables(self):
-        # Fills all Null values as 0
-        self.df = self.df.fillna(0)
-
-        # Converts Column data type from 'object' to intended type
-        self.df['FantPt'] = self.df['FantPt'].astype(str).astype(int)
-        self.df['age'] = self.df['age'].astype(str).astype(int)
-        self.df['G'] = self.df['G'].astype(str).astype(int)
-        self.df['GS'] = self.df['GS'].astype(str).astype(int)
-        self.df['TGT'] = self.df['TGT'].astype(str).astype(int)
-        self.df["Y/Rec"] = self.df["Y/Rec"].astype(str).astype(float)
-        self.df['REC1D'] = self.df['REC1D'].astype(str).astype(int)
-        self.df['RECLng'] = self.df['RECLng'].astype(str).astype(int)
-        self.df['CtchPct'] = self.df['CtchPct'].astype(str).astype(float)
-        self.df["Y/Tch"] = self.df["Y/Tch"].astype(str).astype(float)
-        self.df['Fmb'] = self.df['Fmb'].astype(str).astype(int)
-
-    def keras_data(self):
-        rushing_and_receiving = ['FantPt', 'age', 'G', 'GS', 'TGT', "Y/Rec", 'REC1D', 'RECLng', 'CtchPct', "Y/Tch",
-                                 'Fmb']
-
-        SQL_Query = pd.read_sql_query(
-            '''Select FantPt, age, G, GS, TGT, "Y/Rec", REC1D, RECLng, CtchPct, "Y/Tch", Fmb
-            From (Select Ft.FantPt, FT.ftid
-                From Fantasy Ft
-                WHERE Ft.ftid IN (SELECT DISTINCT Cmb.ftid
-                                    FROM Fantasy F, 'Rushing_Receiving' RR, Combined Cmb
-                                    WHERE RR.ruretid == Cmb.ruretid and RR.Pos == 'te')) FF 
-            Join (Select *
-                From Combined Cmb JOIN 'Rushing_Receiving' RR
-                ON Cmb.ruretid == RR.ruretid
-                Where RR.Pos == 'te') RE  
-            ON (RE.ftid + 1) == FF.ftid
-            ''', self.conn)
-
-        self.df = pd.DataFrame(SQL_Query, columns=rushing_and_receiving)
-        self.convertTables()
-        self.df.to_csv('data/r_r.csv')
-
-
-
-        # for value in rush_receive_list:
-        #     print(value)
-
-        #
-        # # meta data
-        # self.df.info()
-        # self.df.describe()
-        #
-        # # prints the histogram
-        # self.df.hist(bins=50, figsize=(20, 15))
-        # plt.show()
-
         self.conn.close()
